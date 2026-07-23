@@ -11,10 +11,14 @@ const features = [
   {
     title: "AI research on add",
     body: "Type something like “Concord NC mall.” bucketlist.ai looks it up, you confirm, then it becomes a card.",
+    image: "/images/landing-feature-ai.png",
+    alt: "Planning a place on a phone at a cafe table",
   },
   {
     title: "Events too",
     body: "Concerts, community nights, festivals, and free public events — same card flow with dates, venues, and a free badge.",
+    image: "/images/landing-feature-events.png",
+    alt: "Warm evening festival lights and a picnic table",
   },
   {
     title: "Plan my day",
@@ -25,14 +29,20 @@ const features = [
   {
     title: "Ideas chat",
     body: "A separate brainstorm space when you want suggestions, not a full day plan.",
+    image: "/images/landing-feature-chat.png",
+    alt: "Laptop and tea ready for brainstorming ideas",
   },
   {
     title: "City + radius filters",
     body: "Focus the board on what’s nearby — filter by city and how many miles you’re willing to roam.",
+    image: "/images/landing-feature-radius.png",
+    alt: "Neighborhood rooftops at golden hour",
   },
   {
     title: "Mark it done",
     body: "Check places off as you go. Your list stays warm, personal, and ready for the next outing.",
+    image: "/images/landing-feature-done.png",
+    alt: "Picnic blanket after a completed day out",
   },
 ];
 
@@ -144,31 +154,15 @@ export function LandingPage() {
                   {feature.body}
                 </p>
               </div>
-              {feature.image ? (
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-lg)]">
-                  <Image
-                    src={feature.image}
-                    alt={feature.alt ?? ""}
-                    fill
-                    className="object-cover transition duration-700 hover:scale-[1.03]"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                </div>
-              ) : (
-                <div
-                  className="flex aspect-[4/3] items-end overflow-hidden rounded-[1.75rem] p-8 shadow-[var(--shadow)]"
-                  style={{
-                    background:
-                      index % 2 === 0
-                        ? "linear-gradient(145deg, #0f766e 0%, #1c2a24 70%)"
-                        : "linear-gradient(145deg, #c45c26 0%, #1c2a24 75%)",
-                  }}
-                >
-                  <p className="font-[family-name:var(--font-display)] text-3xl text-white/90">
-                    {feature.title}
-                  </p>
-                </div>
-              )}
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] shadow-[var(--shadow-lg)]">
+                <Image
+                  src={feature.image}
+                  alt={feature.alt}
+                  fill
+                  className="object-cover transition duration-700 hover:scale-[1.03]"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
             </article>
           ))}
         </div>
@@ -222,15 +216,15 @@ export function LandingPage() {
               Ready when the weekend is
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-white/75">
-              Sign up with your access password and open a list that feels like
-              planning a good day — not managing a spreadsheet.
+              Create a free account and open a list that feels like planning a
+              good day — not managing a spreadsheet.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 href="/signup"
                 className="rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110"
               >
-                Create access
+                Sign up
               </Link>
               <Link
                 href="/login"
