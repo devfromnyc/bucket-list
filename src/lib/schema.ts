@@ -18,6 +18,17 @@ export const categories = [
 
 export type Category = (typeof categories)[number];
 
+export const eventCategories = [
+  "concert",
+  "community",
+  "free_public",
+  "festival",
+  "sports",
+  "other",
+] as const;
+
+export type EventCategory = (typeof eventCategories)[number];
+
 export const places = pgTable("places", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
@@ -28,6 +39,32 @@ export const places = pgTable("places", {
   longitude: doublePrecision("longitude"),
   imageUrl: text("image_url"),
   mapsUrl: text("maps_url"),
+  completed: boolean("completed").notNull().default(false),
+  favorited: boolean("favorited").notNull().default(false),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const events = pgTable("events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull().default(""),
+  category: text("category").notNull().default("other"),
+  venue: text("venue"),
+  city: text("city"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  startsAt: text("starts_at"),
+  endsAt: text("ends_at"),
+  isFree: boolean("is_free").default(false),
+  imageUrl: text("image_url"),
+  mapsUrl: text("maps_url"),
+  eventUrl: text("event_url"),
   completed: boolean("completed").notNull().default(false),
   favorited: boolean("favorited").notNull().default(false),
   completedAt: timestamp("completed_at", { withTimezone: true }),
@@ -65,5 +102,7 @@ export const profiles = pgTable("profiles", {
 
 export type Place = typeof places.$inferSelect;
 export type NewPlace = typeof places.$inferInsert;
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;

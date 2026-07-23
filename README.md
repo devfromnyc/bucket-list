@@ -5,12 +5,12 @@ Personal bucket-list app for places and things to do. Built with Next.js, Tailwi
 ## Features
 
 - Password-protected personal board (card layout)
-- Categories: food, entertainment, kid friendly, parks/outdoor, other
-- City filter + mile radius (board and day planner)
+- Places + **events** (concerts, community, free public, festivals, sports)
+- Categories for places and events; heart favorites; mark done / attended
+- City filter + mile radius
 - Account settings / preferences (bio, home city, defaults for AI)
-- Mark places completed
-- AI place research: type a title → Gemini looks up details / Maps link → confirm → save
-- **Plan my day**: mood + criteria → timed itinerary (separate from brainstorm chat)
+- AI research for places and events → confirm → save card
+- **Plan my day**: mood + criteria → timed itinerary
 - Separate AI ideas chat with “add to list” shortcuts
 
 ## Setup
@@ -32,7 +32,7 @@ cp .env.example .env.local
 npm run db:push
 ```
 
-If you already pushed an earlier schema, run `db:push` again so new columns (`city`, `latitude`, `longitude`) and the `profiles` preferences table are added.
+If you already pushed an earlier schema, run `db:push` again so new columns/tables (`events`, `profiles`, geo fields, favorites) are added.
 
 ### 3. Auth + Gemini
 

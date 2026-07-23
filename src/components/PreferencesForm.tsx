@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { Profile } from "@/lib/schema";
 import { RADIUS_OPTIONS } from "@/lib/geo";
 
@@ -17,8 +17,38 @@ const vibes = [
   "kid chaos energy",
 ];
 
+const INTEREST_CHIPS = [
+  "Live music",
+  "Concerts",
+  "Festivals",
+  "Community events",
+  "Free outdoor events",
+  "Food & restaurants",
+  "Coffee",
+  "Breweries",
+  "Parks & trails",
+  "Kid-friendly",
+  "Museums",
+  "Art",
+  "Sports",
+  "Nightlife",
+  "Farmers markets",
+  "Theater",
+];
+
 const inputClass =
   "w-full rounded-2xl border border-[var(--border)] bg-[var(--paper)] px-4 py-3 text-[var(--ink)] outline-none focus:ring-2 focus:ring-[var(--accent)]";
+
+function parseInterestList(value: string) {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function serializeInterests(parts: string[]) {
+  return parts.join(", ");
+}
 
 export function PreferencesForm() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -37,6 +67,11 @@ export function PreferencesForm() {
   const [interests, setInterests] = useState("");
   const [dietaryNotes, setDietaryNotes] = useState("");
   const [avoidNotes, setAvoidNotes] = useState("");
+
+  const selectedInterests = useMemo(
+    () => parseInterestList(interests).map((i) => i.toLowerCase()),
+    [interests],
+  );
 
   useEffect(() => {
     async function load() {
@@ -64,6 +99,17 @@ export function PreferencesForm() {
     }
     void load();
   }, []);
+
+  function toggleInterestChip(chip: string) {
+    const current = parseInterestList(interests);
+    const exists = current.some(
+      (item) => item.toLowerCase() === chip.toLowerCase(),
+    );
+    const next = exists
+      ? current.filter((item) => item.toLowerCase() !== chip.toLowerCase())
+      : [...current, chip];
+    setInterests(serializeInterests(next));
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -143,14 +189,58 @@ export function PreferencesForm() {
       <section className="space-y-5 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] sm:p-8">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+            Interests
+          </p>
+          <h2 className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
+            What you’re into
+          </h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Used by Ideas chat, Plan my day, and AI research for places and
+            events — so suggestions match you without retyping every time.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {INTEREST_CHIPS.map((chip) => {
+            const active = selectedInterests.includes(chip.toLowerCase());
+            return (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => toggleInterestChip(chip)}
+                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition ${
+                  active
+                    ? "bg-[var(--accent)] text-white"
+                    : "bg-[var(--paper)] text-[var(--muted)] ring-1 ring-[var(--border)] hover:text-[var(--ink)]"
+                }`}
+              >
+                {chip}
+              </button>
+            );
+          })}
+        </div>
+
+        <Field label="Your interests (edit freely)">
+          <textarea
+            value={interests}
+            onChange={(e) => setInterests(e.target.value)}
+            rows={3}
+            className={inputClass}
+            placeholder="Tap chips above or type your own, comma-separated — e.g. Live music, farmers markets, kid-friendly parks"
+          />
+        </Field>
+      </section>
+
+      <section className="space-y-5 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow)] sm:p-8">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
             Bucket list preferences
           </p>
           <h2 className="mt-1 font-[family-name:var(--font-display)] text-2xl text-[var(--ink)]">
             Defaults for AI & filters
           </h2>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            These feed chat, day planning, and board defaults so you don’t have
-            to retype your home base every time.
+            Home base and defaults for the board, events, and day planner.
           </p>
         </div>
 
@@ -218,15 +308,6 @@ export function PreferencesForm() {
           I usually plan with kids
         </label>
 
-        <Field label="Interests">
-          <textarea
-            value={interests}
-            onChange={(e) => setInterests(e.target.value)}
-            rows={2}
-            className={inputClass}
-            placeholder="Coffee shops, trails, live music, museums…"
-          />
-        </Field>
         <Field label="Dietary notes">
           <textarea
             value={dietaryNotes}

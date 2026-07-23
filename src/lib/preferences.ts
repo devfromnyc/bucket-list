@@ -136,6 +136,11 @@ export function formatPreferencesForAi(profile: Profile | null | undefined) {
   const lines: string[] = [];
   if (profile.name) lines.push(`Name: ${profile.name}`);
   if (profile.bio) lines.push(`Bio: ${profile.bio}`);
+  if (profile.interests) {
+    lines.push(
+      `Interests (prioritize these for place and event recommendations): ${profile.interests}`,
+    );
+  }
   if (profile.homeCity) lines.push(`Home city: ${profile.homeCity}`);
   if (profile.defaultRadiusMiles)
     lines.push(`Usual search radius: about ${profile.defaultRadiusMiles} miles`);
@@ -143,10 +148,9 @@ export function formatPreferencesForAi(profile: Profile | null | undefined) {
   if (profile.budgetPreference)
     lines.push(`Budget preference: ${profile.budgetPreference}`);
   if (profile.preferredVibe) lines.push(`Preferred vibe: ${profile.preferredVibe}`);
-  if (profile.interests) lines.push(`Interests: ${profile.interests}`);
   if (profile.dietaryNotes) lines.push(`Dietary notes: ${profile.dietaryNotes}`);
   if (profile.avoidNotes) lines.push(`Avoid: ${profile.avoidNotes}`);
 
   if (lines.length === 0) return "";
-  return `Known user preferences (use these so they don’t have to repeat themselves; still respect any overrides in the current request):\n${lines.join("\n")}`;
+  return `Known user preferences (use these so they don’t have to repeat themselves; lean hard on Interests for suggestions; still respect any overrides in the current request):\n${lines.join("\n")}`;
 }

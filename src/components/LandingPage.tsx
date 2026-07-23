@@ -13,6 +13,10 @@ const features = [
     body: "Type something like “Concord NC mall.” bucketlist.ai looks it up, you confirm, then it becomes a card.",
   },
   {
+    title: "Events too",
+    body: "Concerts, community nights, festivals, and free public events — same card flow with dates, venues, and a free badge.",
+  },
+  {
     title: "Plan my day",
     body: "Mood, city, and mile radius in — a timed itinerary out. For when you don’t want to decide.",
     image: "/images/landing-feature-day.png",

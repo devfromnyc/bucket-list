@@ -11,8 +11,8 @@ export default function SettingsPage() {
           Preferences
         </h1>
         <p className="mt-2 text-[var(--muted)]">
-          Tell bucketlist.ai about you once — better recommendations, fewer
-          repeated inputs on the board and day planner.
+          Tell bucketlist.ai about you once — interests, home city, and defaults
+          power better place and event recommendations without the retyping.
         </p>
       </div>
       <PreferencesForm />

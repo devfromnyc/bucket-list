@@ -5,8 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 
 const links = [
   { href: "/board", label: "Board" },
+  { href: "/events", label: "Events" },
   { href: "/favorites", label: "Favorites" },
   { href: "/add", label: "Add place" },
+  { href: "/events/add", label: "Add event" },
   { href: "/plan", label: "Plan my day" },
   { href: "/chat", label: "Ideas chat" },
   { href: "/settings", label: "Settings" },
@@ -36,7 +38,16 @@ export function AppNav() {
 
         <nav className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
           {links.map((link) => {
-            const active = pathname.startsWith(link.href);
+            const moreSpecificExists = links.some(
+              (other) =>
+                other.href !== link.href &&
+                other.href.startsWith(`${link.href}/`) &&
+                (pathname === other.href ||
+                  pathname.startsWith(`${other.href}/`)),
+            );
+            const active =
+              pathname === link.href ||
+              (!moreSpecificExists && pathname.startsWith(`${link.href}/`));
             return (
               <Link
                 key={link.href}
