@@ -8,6 +8,7 @@ import { AuthShell } from "@/components/AuthShell";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
@@ -36,12 +37,12 @@ function LoginForm() {
   return (
     <AuthShell
       title="Welcome back"
-      subtitle="Log in with your access password to open your board."
+      subtitle="Log in with your email and password."
       footer={
         <>
           New here?{" "}
           <Link href="/signup" className="font-semibold text-[var(--accent)]">
-            Create access
+            Sign up
           </Link>
           {" · "}
           <Link href="/" className="font-semibold text-[var(--ink)]">
@@ -53,10 +54,27 @@ function LoginForm() {
       <form onSubmit={onSubmit} className="space-y-5">
         <div>
           <label
+            htmlFor="email"
+            className="mb-2 block text-sm font-medium text-[var(--ink)]"
+          >
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent)]"
+            autoFocus
+            required
+          />
+        </div>
+        <div>
+          <label
             htmlFor="password"
             className="mb-2 block text-sm font-medium text-[var(--ink)]"
           >
-            Access password
+            Password
           </label>
           <input
             id="password"
@@ -64,7 +82,6 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent)]"
-            autoFocus
             required
           />
         </div>

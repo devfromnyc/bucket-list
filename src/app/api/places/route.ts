@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
+import { desc, eq } from "drizzle-orm";
+import { getSessionUser } from "@/lib/auth";
 import { isCategory } from "@/lib/categories";
 import { geocodeCity } from "@/lib/geo";
 import { createPlace, listPlaces, uniqueCities } from "@/lib/places";
-import type { Category } from "@/lib/schema";
 import { getDb } from "@/lib/db";
-import { places } from "@/lib/schema";
-import { desc } from "drizzle-orm";
+import { places, type Category } from "@/lib/schema";
 
 export async function GET(request: Request) {
   try {
+    const session = await getSessionUser();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const categoryParam = searchParams.get("category") ?? "all";
     const statusParam = searchParams.get("status") ?? "all";
@@ -32,7 +37,7 @@ export async function GET(request: Request) {
       if (geo) center = { lat: geo.lat, lng: geo.lng };
     }
 
-    const filtered = await listPlaces({
+    const filtered = await listPlaces(session.userId, {
       category,
       status,
       favoritesOnly,
@@ -44,9 +49,12 @@ export async function GET(request: Request) {
       center,
     });
 
-    // Cities list from full table (not filtered) for the dropdown
     const db = getDb();
-    const allRows = await db.select().from(places).orderBy(desc(places.createdAt));
+    const allRows = await db
+      .select()
+      .from(places)
+      .where(eq(places.userId, session.userId))
+      .orderBy(desc(places.createdAt));
     const cities = uniqueCities(allRows);
 
     return NextResponse.json({
@@ -63,6 +71,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSessionUser();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const title = String(body.title ?? "").trim();
     if (!title) {
@@ -88,6 +101,7 @@ export async function POST(request: Request) {
           : null;
 
     const place = await createPlace({
+      userId: session.userId,
       title,
       description: String(body.description ?? ""),
       category,

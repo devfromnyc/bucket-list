@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,6 +18,11 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
@@ -35,11 +41,11 @@ export default function SignupPage() {
 
   return (
     <AuthShell
-      title="Create your access"
-      subtitle="Add your name, then unlock bucketlist.ai with your app password."
+      title="Create your account"
+      subtitle="Choose your email and password — your list stays private to you."
       footer={
         <>
-          Already set up?{" "}
+          Already have an account?{" "}
           <Link href="/login" className="font-semibold text-[var(--accent)]">
             Log in
           </Link>
@@ -88,7 +94,7 @@ export default function SignupPage() {
             htmlFor="password"
             className="mb-2 block text-sm font-medium text-[var(--ink)]"
           >
-            Access password
+            Password
           </label>
           <input
             id="password"
@@ -96,12 +102,29 @@ export default function SignupPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent)]"
+            minLength={8}
             required
           />
           <p className="mt-2 text-xs text-[var(--muted)]">
-            Personal deploy: use the same <code>APP_PASSWORD</code> from your
-            environment.
+            At least 8 characters.
           </p>
+        </div>
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="mb-2 block text-sm font-medium text-[var(--ink)]"
+          >
+            Confirm password
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent)]"
+            minLength={8}
+            required
+          />
         </div>
         {error ? (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">

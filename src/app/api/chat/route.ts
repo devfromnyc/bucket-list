@@ -1,8 +1,8 @@
 import { getSessionUser } from "@/lib/auth";
 import { streamChat } from "@/lib/gemini";
 import {
-  ensureProfile,
   formatPreferencesForAi,
+  getProfileById,
 } from "@/lib/preferences";
 
 export async function POST(request: Request) {
@@ -15,9 +15,7 @@ export async function POST(request: Request) {
     }
 
     const session = await getSessionUser();
-    const profile = session
-      ? await ensureProfile({ email: session.email, name: session.name })
-      : null;
+    const profile = session ? await getProfileById(session.userId) : null;
 
     const formatted = messages.map(
       (m: { role: string; content: string }) => ({

@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { Profile } from "@/lib/schema";
 import { RADIUS_OPTIONS } from "@/lib/geo";
 
+type PublicProfile = Omit<Profile, "passwordHash">;
+
 const budgets = ["free / cheap", "moderate", "treat yourself", "flexible"];
 const vibes = [
   "",
@@ -51,7 +53,7 @@ function serializeInterests(parts: string[]) {
 }
 
 export function PreferencesForm() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -79,7 +81,7 @@ export function PreferencesForm() {
         const res = await fetch("/api/preferences");
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to load");
-        const p = data.profile as Profile;
+        const p = data.profile as PublicProfile;
         setProfile(p);
         setName(p.name ?? "");
         setBio(p.bio ?? "");

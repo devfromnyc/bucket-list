@@ -1,28 +1,46 @@
 import { NextResponse } from "next/server";
 import {
   AUTH_COOKIE,
-  checkPassword,
   createSessionToken,
 } from "@/lib/auth";
-import { ensureProfile } from "@/lib/preferences";
+import { getProfileByEmail } from "@/lib/preferences";
+import { verifyPassword } from "@/lib/password";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const password = String(body.password ?? "");
-    const name = body.name ? String(body.name) : undefined;
-    const email = body.email ? String(body.email) : undefined;
+    const email = String(body.email ?? "").trim().toLowerCase();
 
-    if (!checkPassword(password)) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: "Invalid password. Use the app password from your .env setup." },
+        { error: "Email and password are required" },
+        { status: 400 },
+      );
+    }
+
+    const user = await getProfileByEmail(email);
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
         { status: 401 },
       );
     }
 
-    await ensureProfile({ email, name });
+    const ok = await verifyPassword(password, user.passwordHash);
+    if (!ok) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 },
+      );
+    }
 
-    const token = await createSessionToken({ name, email });
+    const token = await createSessionToken({
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+    });
+
     const response = NextResponse.json({ ok: true });
     response.cookies.set(AUTH_COOKIE, token, {
       httpOnly: true,

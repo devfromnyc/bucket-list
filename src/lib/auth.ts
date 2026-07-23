@@ -1,11 +1,11 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { DEFAULT_PROFILE_EMAIL } from "./preferences";
 
 export const AUTH_COOKIE = "bucket_list_session";
 
 export type SessionUser = {
   authenticated: true;
+  userId: string;
   name?: string;
   email: string;
 };
@@ -18,16 +18,16 @@ function getSecret() {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSessionToken(profile?: {
-  name?: string;
-  email?: string;
+export async function createSessionToken(user: {
+  userId: string;
+  name?: string | null;
+  email: string;
 }) {
-  const email =
-    profile?.email?.trim().toLowerCase() || DEFAULT_PROFILE_EMAIL;
   return new SignJWT({
     authenticated: true,
-    name: profile?.name?.trim() || undefined,
-    email,
+    userId: user.userId,
+    name: user.name?.trim() || undefined,
+    email: user.email.trim().toLowerCase(),
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -38,7 +38,7 @@ export async function createSessionToken(profile?: {
 export async function verifySessionToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, getSecret());
-    return payload.authenticated === true;
+    return payload.authenticated === true && typeof payload.userId === "string";
   } catch {
     return false;
   }
@@ -51,13 +51,13 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
     if (payload.authenticated !== true) return null;
+    if (typeof payload.userId !== "string" || !payload.userId) return null;
+    if (typeof payload.email !== "string" || !payload.email) return null;
     return {
       authenticated: true,
+      userId: payload.userId,
       name: typeof payload.name === "string" ? payload.name : undefined,
-      email:
-        typeof payload.email === "string" && payload.email
-          ? payload.email
-          : DEFAULT_PROFILE_EMAIL,
+      email: payload.email,
     };
   } catch {
     return null;
@@ -68,10 +68,10 @@ export async function isAuthenticated() {
   return (await getSessionUser()) !== null;
 }
 
-export function checkPassword(password: string) {
-  const expected = process.env.APP_PASSWORD;
-  if (!expected) {
-    throw new Error("APP_PASSWORD is not set");
+export async function requireSessionUser() {
+  const user = await getSessionUser();
+  if (!user) {
+    throw new Error("Unauthorized");
   }
-  return password === expected;
+  return user;
 }

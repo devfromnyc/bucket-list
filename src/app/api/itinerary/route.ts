@@ -4,8 +4,8 @@ import { geocodeCity } from "@/lib/geo";
 import { planItinerary } from "@/lib/itinerary";
 import { listPlaces } from "@/lib/places";
 import {
-  ensureProfile,
   formatPreferencesForAi,
+  getProfileById,
 } from "@/lib/preferences";
 
 export async function POST(request: Request) {
@@ -13,9 +13,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const includeSaved = body.includeSaved !== false;
     const session = await getSessionUser();
-    const profile = session
-      ? await ensureProfile({ email: session.email, name: session.name })
-      : null;
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const profile = await getProfileById(session.userId);
 
     const location =
       String(body.location ?? "").trim() || profile?.homeCity?.trim() || "";
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
           const geo = await geocodeCity(location);
           if (geo) center = { lat: geo.lat, lng: geo.lng };
         }
-        const places = await listPlaces({
+        const places = await listPlaces(session.userId, {
           status: "todo",
           city: location || null,
           radiusMiles:

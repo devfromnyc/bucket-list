@@ -1,18 +1,25 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { milesBetween } from "./geo";
 import { getDb } from "./db";
 import { places, type Category, type NewPlace, type Place } from "./schema";
 
-export async function listPlaces(filters?: {
-  category?: Category | "all";
-  status?: "all" | "todo" | "completed";
-  favoritesOnly?: boolean;
-  city?: string | null;
-  radiusMiles?: number | null;
-  center?: { lat: number; lng: number } | null;
-}) {
+export async function listPlaces(
+  userId: string,
+  filters?: {
+    category?: Category | "all";
+    status?: "all" | "todo" | "completed";
+    favoritesOnly?: boolean;
+    city?: string | null;
+    radiusMiles?: number | null;
+    center?: { lat: number; lng: number } | null;
+  },
+) {
   const db = getDb();
-  const rows = await db.select().from(places).orderBy(desc(places.createdAt));
+  const rows = await db
+    .select()
+    .from(places)
+    .where(eq(places.userId, userId))
+    .orderBy(desc(places.createdAt));
 
   return rows.filter((place) => {
     if (filters?.favoritesOnly && !place.favorited) return false;
@@ -67,9 +74,12 @@ export function uniqueCities(rows: Place[]) {
   return [...set].sort((a, b) => a.localeCompare(b));
 }
 
-export async function getPlace(id: string) {
+export async function getPlace(userId: string, id: string) {
   const db = getDb();
-  const [place] = await db.select().from(places).where(eq(places.id, id));
+  const [place] = await db
+    .select()
+    .from(places)
+    .where(and(eq(places.id, id), eq(places.userId, userId)));
   return place ?? null;
 }
 
@@ -88,8 +98,9 @@ export async function createPlace(
 }
 
 export async function updatePlace(
+  userId: string,
   id: string,
-  input: Partial<Omit<NewPlace, "id" | "createdAt">>,
+  input: Partial<Omit<NewPlace, "id" | "createdAt" | "userId">>,
 ) {
   const db = getDb();
   const [updated] = await db
@@ -98,43 +109,44 @@ export async function updatePlace(
       ...input,
       updatedAt: new Date(),
     })
-    .where(eq(places.id, id))
+    .where(and(eq(places.id, id), eq(places.userId, userId)))
     .returning();
   return updated ?? null;
 }
 
-export async function deletePlace(id: string) {
+export async function deletePlace(userId: string, id: string) {
   const db = getDb();
   const [deleted] = await db
     .delete(places)
-    .where(eq(places.id, id))
+    .where(and(eq(places.id, id), eq(places.userId, userId)))
     .returning();
   return deleted ?? null;
 }
 
-export async function toggleCompleted(id: string) {
-  const place = await getPlace(id);
+export async function toggleCompleted(userId: string, id: string) {
+  const place = await getPlace(userId, id);
   if (!place) return null;
   const completed = !place.completed;
-  return updatePlace(id, {
+  return updatePlace(userId, id, {
     completed,
     completedAt: completed ? new Date() : null,
   });
 }
 
-export async function toggleFavorite(id: string) {
-  const place = await getPlace(id);
+export async function toggleFavorite(userId: string, id: string) {
+  const place = await getPlace(userId, id);
   if (!place) return null;
-  return updatePlace(id, {
+  return updatePlace(userId, id, {
     favorited: !place.favorited,
   });
 }
 
-export async function countPlaces() {
+export async function countPlaces(userId: string) {
   const db = getDb();
   const rows = await db
     .select({ id: places.id })
     .from(places)
+    .where(eq(places.userId, userId))
     .orderBy(asc(places.createdAt));
   return rows.length;
 }

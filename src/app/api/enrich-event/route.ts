@@ -3,8 +3,8 @@ import { getSessionUser } from "@/lib/auth";
 import { isEventCategory } from "@/lib/eventCategories";
 import { enrichEvent } from "@/lib/gemini";
 import {
-  ensureProfile,
   formatPreferencesForAi,
+  getProfileById,
 } from "@/lib/preferences";
 
 export async function POST(request: Request) {
@@ -21,9 +21,7 @@ export async function POST(request: Request) {
         : undefined;
 
     const session = await getSessionUser();
-    const profile = session
-      ? await ensureProfile({ email: session.email, name: session.name })
-      : null;
+    const profile = session ? await getProfileById(session.userId) : null;
 
     const result = await enrichEvent(
       query,

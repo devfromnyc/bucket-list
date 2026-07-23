@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { milesBetween } from "./geo";
 import { getDb } from "./db";
 import {
@@ -8,16 +8,23 @@ import {
   type NewEvent,
 } from "./schema";
 
-export async function listEvents(filters?: {
-  category?: EventCategory | "all";
-  status?: "all" | "todo" | "completed";
-  favoritesOnly?: boolean;
-  city?: string | null;
-  radiusMiles?: number | null;
-  center?: { lat: number; lng: number } | null;
-}) {
+export async function listEvents(
+  userId: string,
+  filters?: {
+    category?: EventCategory | "all";
+    status?: "all" | "todo" | "completed";
+    favoritesOnly?: boolean;
+    city?: string | null;
+    radiusMiles?: number | null;
+    center?: { lat: number; lng: number } | null;
+  },
+) {
   const db = getDb();
-  const rows = await db.select().from(events).orderBy(desc(events.createdAt));
+  const rows = await db
+    .select()
+    .from(events)
+    .where(eq(events.userId, userId))
+    .orderBy(desc(events.createdAt));
 
   return rows.filter((event) => {
     if (filters?.favoritesOnly && !event.favorited) return false;
@@ -72,9 +79,12 @@ export function uniqueEventCities(rows: Event[]) {
   return [...set].sort((a, b) => a.localeCompare(b));
 }
 
-export async function getEvent(id: string) {
+export async function getEvent(userId: string, id: string) {
   const db = getDb();
-  const [event] = await db.select().from(events).where(eq(events.id, id));
+  const [event] = await db
+    .select()
+    .from(events)
+    .where(and(eq(events.id, id), eq(events.userId, userId)));
   return event ?? null;
 }
 
@@ -93,8 +103,9 @@ export async function createEvent(
 }
 
 export async function updateEvent(
+  userId: string,
   id: string,
-  input: Partial<Omit<NewEvent, "id" | "createdAt">>,
+  input: Partial<Omit<NewEvent, "id" | "createdAt" | "userId">>,
 ) {
   const db = getDb();
   const [updated] = await db
@@ -103,34 +114,34 @@ export async function updateEvent(
       ...input,
       updatedAt: new Date(),
     })
-    .where(eq(events.id, id))
+    .where(and(eq(events.id, id), eq(events.userId, userId)))
     .returning();
   return updated ?? null;
 }
 
-export async function deleteEvent(id: string) {
+export async function deleteEvent(userId: string, id: string) {
   const db = getDb();
   const [deleted] = await db
     .delete(events)
-    .where(eq(events.id, id))
+    .where(and(eq(events.id, id), eq(events.userId, userId)))
     .returning();
   return deleted ?? null;
 }
 
-export async function toggleEventCompleted(id: string) {
-  const event = await getEvent(id);
+export async function toggleEventCompleted(userId: string, id: string) {
+  const event = await getEvent(userId, id);
   if (!event) return null;
   const completed = !event.completed;
-  return updateEvent(id, {
+  return updateEvent(userId, id, {
     completed,
     completedAt: completed ? new Date() : null,
   });
 }
 
-export async function toggleEventFavorite(id: string) {
-  const event = await getEvent(id);
+export async function toggleEventFavorite(userId: string, id: string) {
+  const event = await getEvent(userId, id);
   if (!event) return null;
-  return updateEvent(id, {
+  return updateEvent(userId, id, {
     favorited: !event.favorited,
   });
 }

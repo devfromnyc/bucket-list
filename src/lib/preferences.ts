@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm";
 import { geocodeCity } from "./geo";
 import { getDb } from "./db";
+import { hashPassword } from "./password";
 import { profiles, type Profile } from "./schema";
-
-export const DEFAULT_PROFILE_EMAIL = "owner@local";
 
 export type PreferenceUpdates = {
   name?: string | null;
@@ -20,36 +19,36 @@ export type PreferenceUpdates = {
 
 export async function getProfileByEmail(email: string) {
   const db = getDb();
-  const key = email.trim().toLowerCase() || DEFAULT_PROFILE_EMAIL;
+  const key = email.trim().toLowerCase();
   const [row] = await db.select().from(profiles).where(eq(profiles.email, key));
   return row ?? null;
 }
 
-export async function ensureProfile(input: {
-  email?: string | null;
-  name?: string | null;
+export async function getProfileById(userId: string) {
+  const db = getDb();
+  const [row] = await db.select().from(profiles).where(eq(profiles.id, userId));
+  return row ?? null;
+}
+
+export async function createUserAccount(input: {
+  email: string;
+  name: string;
+  password: string;
 }) {
   const db = getDb();
-  const email =
-    (input.email?.trim().toLowerCase() || DEFAULT_PROFILE_EMAIL).slice(0, 320);
+  const email = input.email.trim().toLowerCase();
   const existing = await getProfileByEmail(email);
   if (existing) {
-    if (input.name?.trim() && input.name.trim() !== existing.name) {
-      const [updated] = await db
-        .update(profiles)
-        .set({ name: input.name.trim(), updatedAt: new Date() })
-        .where(eq(profiles.email, email))
-        .returning();
-      return updated;
-    }
-    return existing;
+    throw new Error("An account with that email already exists");
   }
 
+  const passwordHash = await hashPassword(input.password);
   const [created] = await db
     .insert(profiles)
     .values({
       email,
-      name: input.name?.trim() || null,
+      name: input.name.trim(),
+      passwordHash,
       updatedAt: new Date(),
     })
     .returning();
@@ -57,11 +56,14 @@ export async function ensureProfile(input: {
 }
 
 export async function updatePreferences(
-  email: string,
+  userId: string,
   updates: PreferenceUpdates,
 ) {
   const db = getDb();
-  const profile = await ensureProfile({ email });
+  const profile = await getProfileById(userId);
+  if (!profile) {
+    throw new Error("Profile not found");
+  }
 
   let homeLatitude = profile.homeLatitude;
   let homeLongitude = profile.homeLongitude;
@@ -123,7 +125,7 @@ export async function updatePreferences(
           : profile.preferredVibe,
       updatedAt: new Date(),
     })
-    .where(eq(profiles.id, profile.id))
+    .where(eq(profiles.id, userId))
     .returning();
 
   return updated;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
+import { getSessionUser } from "@/lib/auth";
 import { isEventCategory } from "@/lib/eventCategories";
 import { geocodeCity } from "@/lib/geo";
 import { createEvent, listEvents, uniqueEventCities } from "@/lib/events";
@@ -8,6 +9,11 @@ import { events, type EventCategory } from "@/lib/schema";
 
 export async function GET(request: Request) {
   try {
+    const session = await getSessionUser();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const categoryParam = searchParams.get("category") ?? "all";
     const statusParam = searchParams.get("status") ?? "all";
@@ -31,7 +37,7 @@ export async function GET(request: Request) {
       if (geo) center = { lat: geo.lat, lng: geo.lng };
     }
 
-    const filtered = await listEvents({
+    const filtered = await listEvents(session.userId, {
       category,
       status,
       favoritesOnly,
@@ -44,7 +50,11 @@ export async function GET(request: Request) {
     });
 
     const db = getDb();
-    const allRows = await db.select().from(events).orderBy(desc(events.createdAt));
+    const allRows = await db
+      .select()
+      .from(events)
+      .where(eq(events.userId, session.userId))
+      .orderBy(desc(events.createdAt));
     const cities = uniqueEventCities(allRows);
 
     return NextResponse.json({
@@ -61,6 +71,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSessionUser();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const title = String(body.title ?? "").trim();
     if (!title) {
@@ -86,6 +101,7 @@ export async function POST(request: Request) {
           : null;
 
     const event = await createEvent({
+      userId: session.userId,
       title,
       description: String(body.description ?? ""),
       category,

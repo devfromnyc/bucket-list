@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import {
   AUTH_COOKIE,
-  checkPassword,
   createSessionToken,
 } from "@/lib/auth";
-import { ensureProfile } from "@/lib/preferences";
+import { createUserAccount } from "@/lib/preferences";
+import { validatePassword } from "@/lib/password";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const password = String(body.password ?? "");
     const name = String(body.name ?? "").trim();
-    const email = String(body.email ?? "").trim();
+    const email = String(body.email ?? "").trim().toLowerCase();
 
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
@@ -19,19 +19,18 @@ export async function POST(request: Request) {
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
-    if (!checkPassword(password)) {
-      return NextResponse.json(
-        {
-          error:
-            "That access password doesn’t match. For this personal app, use APP_PASSWORD from your environment.",
-        },
-        { status: 401 },
-      );
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return NextResponse.json({ error: passwordError }, { status: 400 });
     }
 
-    await ensureProfile({ email, name });
+    const user = await createUserAccount({ email, name, password });
+    const token = await createSessionToken({
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+    });
 
-    const token = await createSessionToken({ name, email });
     const response = NextResponse.json({ ok: true });
     response.cookies.set(AUTH_COOKIE, token, {
       httpOnly: true,
@@ -44,6 +43,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Signup failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message.includes("already exists") ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

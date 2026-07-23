@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/auth";
 import { isCategory } from "@/lib/categories";
 import {
   deletePlace,
@@ -12,8 +13,12 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: Params) {
   try {
+    const session = await getSessionUser();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
-    const place = await getPlace(id);
+    const place = await getPlace(session.userId, id);
     if (!place) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -27,11 +32,15 @@ export async function GET(_request: Request, { params }: Params) {
 
 export async function PATCH(request: Request, { params }: Params) {
   try {
+    const session = await getSessionUser();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
     const body = await request.json();
 
     if (body.toggleCompleted === true) {
-      const place = await toggleCompleted(id);
+      const place = await toggleCompleted(session.userId, id);
       if (!place) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }
@@ -39,7 +48,7 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     if (body.toggleFavorite === true) {
-      const place = await toggleFavorite(id);
+      const place = await toggleFavorite(session.userId, id);
       if (!place) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }
@@ -64,7 +73,7 @@ export async function PATCH(request: Request, { params }: Params) {
       updates.completedAt = body.completed ? new Date() : null;
     }
 
-    const place = await updatePlace(id, updates);
+    const place = await updatePlace(session.userId, id, updates);
     if (!place) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -78,8 +87,12 @@ export async function PATCH(request: Request, { params }: Params) {
 
 export async function DELETE(_request: Request, { params }: Params) {
   try {
+    const session = await getSessionUser();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id } = await params;
-    const place = await deletePlace(id);
+    const place = await deletePlace(session.userId, id);
     if (!place) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

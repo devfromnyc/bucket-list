@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import {
-  ensureProfile,
+  getProfileById,
   updatePreferences,
 } from "@/lib/preferences";
 
@@ -11,11 +11,12 @@ export async function GET() {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const profile = await ensureProfile({
-      email: session.email,
-      name: session.name,
-    });
-    return NextResponse.json({ profile });
+    const profile = await getProfileById(session.userId);
+    if (!profile) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
+    const { passwordHash: _, ...safe } = profile;
+    return NextResponse.json({ profile: safe });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to load preferences";
@@ -31,7 +32,7 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const profile = await updatePreferences(session.email, {
+    const profile = await updatePreferences(session.userId, {
       name: body.name,
       bio: body.bio,
       homeCity: body.homeCity,
@@ -47,7 +48,8 @@ export async function PATCH(request: Request) {
       preferredVibe: body.preferredVibe,
     });
 
-    return NextResponse.json({ profile });
+    const { passwordHash: _, ...safe } = profile;
+    return NextResponse.json({ profile: safe });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to save preferences";
