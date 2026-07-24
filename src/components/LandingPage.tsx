@@ -27,6 +27,12 @@ const features = [
     alt: "Planning a place on a phone at a cafe table",
   },
   {
+    title: "Trips",
+    body: "Combine places, events, and stays into a multi-day trip — pick from your lists or let AI draft the days.",
+    image: "/images/landing-feature-day.png",
+    alt: "Sunlit park path inviting a day outdoors",
+  },
+  {
     title: "Plan my day",
     body: "Mood, city, and mile radius in — a timed itinerary out. For when you don’t want to decide.",
     image: "/images/landing-feature-day.png",

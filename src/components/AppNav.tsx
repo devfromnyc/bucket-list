@@ -7,6 +7,7 @@ const links = [
   { href: "/board", label: "Board" },
   { href: "/events", label: "Events" },
   { href: "/stays", label: "Stays" },
+  { href: "/trips", label: "Trips" },
   { href: "/favorites", label: "Favorites" },
   { href: "/add", label: "Add place" },
   { href: "/events/add", label: "Add event" },

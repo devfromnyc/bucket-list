@@ -150,5 +150,59 @@ export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type Stay = typeof stays.$inferSelect;
 export type NewStay = typeof stays.$inferInsert;
+
+export const tripStatuses = ["draft", "planned", "done"] as const;
+export type TripStatus = (typeof tripStatuses)[number];
+
+export const tripStopKinds = ["place", "event", "stay", "custom"] as const;
+export type TripStopKind = (typeof tripStopKinds)[number];
+
+/** Saved multi-day trip combining places, events, and stays. */
+export const trips = pgTable("trips", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  destinationCity: text("destination_city"),
+  startsOn: text("starts_on"),
+  endsOn: text("ends_on"),
+  notes: text("notes"),
+  status: text("status").notNull().default("draft"),
+  favorited: boolean("favorited").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const tripStops = pgTable("trip_stops", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  tripId: uuid("trip_id")
+    .notNull()
+    .references(() => trips.id, { onDelete: "cascade" }),
+  dayIndex: integer("day_index").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+  kind: text("kind").notNull().default("custom"),
+  refId: uuid("ref_id"),
+  title: text("title").notNull(),
+  notes: text("notes"),
+  startTime: text("start_time"),
+  mapsUrl: text("maps_url"),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type Trip = typeof trips.$inferSelect;
+export type NewTrip = typeof trips.$inferInsert;
+export type TripStop = typeof tripStops.$inferSelect;
+export type NewTripStop = typeof tripStops.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;
