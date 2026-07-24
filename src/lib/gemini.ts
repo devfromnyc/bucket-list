@@ -55,7 +55,7 @@ export async function enrichPlace(
 ) {
   const genAI = getClient();
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools: [{ googleSearch: {} } as any],
   });
@@ -163,7 +163,7 @@ export async function enrichEvent(
 ) {
   const genAI = getClient();
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools: [{ googleSearch: {} } as any],
   });
@@ -271,7 +271,7 @@ export async function enrichStay(
 ) {
   const genAI = getClient();
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tools: [{ googleSearch: {} } as any],
   });
@@ -349,7 +349,7 @@ export async function streamChat(
     ? `\n\n${preferenceContext.trim()}`
     : "";
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     systemInstruction: `You are a friendly local outing and bucket-list idea coach for bucketlist.ai.
 Help the user brainstorm places to eat, things to do, kid-friendly activities, parks, entertainment, concerts, community events, festivals, free public events, hotels, Airbnbs, and other stays.
 When you suggest a specific place, include the place name clearly (e.g. **Place Name**) so it can be added to a list.
