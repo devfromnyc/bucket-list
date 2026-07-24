@@ -140,7 +140,7 @@ export function formatPreferencesForAi(profile: Profile | null | undefined) {
   if (profile.bio) lines.push(`Bio: ${profile.bio}`);
   if (profile.interests) {
     lines.push(
-      `Interests (prioritize these for place and event recommendations): ${profile.interests}`,
+      `Interests (prioritize these for place, event, and stay recommendations): ${profile.interests}`,
     );
   }
   if (profile.homeCity) lines.push(`Home city: ${profile.homeCity}`);

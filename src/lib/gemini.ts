@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
 import { categories, isCategory } from "./categories";
 import { eventCategories, isEventCategory } from "./eventCategories";
+import { stayCategories, isStayCategory } from "./stayCategories";
 import { geocodeCity } from "./geo";
 
 const enrichSchema = z.object({
@@ -233,6 +234,112 @@ Prefer real upcoming or known event details when available.`;
   } satisfies EnrichEventResult;
 }
 
+const enrichStaySchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  category: z.string(),
+  neighborhood: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
+  priceBand: z.string().nullable().optional(),
+  mapsUrl: z.string().nullable(),
+  imageUrl: z.string().nullable(),
+  bookingUrl: z.string().nullable().optional(),
+  notes: z.string().optional(),
+});
+
+export type EnrichStayResult = {
+  title: string;
+  description: string;
+  category: (typeof stayCategories)[number];
+  neighborhood: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  priceBand: string | null;
+  mapsUrl: string | null;
+  imageUrl: string | null;
+  bookingUrl: string | null;
+  notes?: string;
+};
+
+export async function enrichStay(
+  query: string,
+  categoryHint?: string,
+  preferenceContext?: string,
+) {
+  const genAI = getClient();
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tools: [{ googleSearch: {} } as any],
+  });
+
+  const prompt = `Research this hotel, Airbnb, vacation rental, hostel, or other stay from the internet (think “hotels near me” / Google Maps style research) and return ONLY a JSON object (no markdown) with these keys:
+- title: cleaned property or hotel name
+- description: 2-4 engaging sentences about the stay, vibe, and why someone might book it (mention amenities or neighborhood feel when known). Do NOT invent live room rates or availability — suggest checking Maps/listing for current prices.
+- category: one of ${stayCategories.join(", ")}
+- neighborhood: neighborhood or area name if known, or null
+- city: city and state/region string (e.g. "Concord, NC"), or null
+- latitude: approximate latitude as a number, or null
+- longitude: approximate longitude as a number, or null
+- priceBand: rough vibe only if publicly mentioned (e.g. "$", "$$", "$$$", "budget", "mid-range", "luxury"), or null — never invent a nightly rate
+- mapsUrl: Google Maps search or place URL if possible, otherwise null
+- imageUrl: a publicly accessible image URL if found, otherwise null
+- bookingUrl: official site, Airbnb/Booking/Hotels.com listing, or Maps place URL if found, otherwise null
+- notes: brief note about confidence / remind user to verify prices on Maps or the listing
+
+User query: "${query}"
+${categoryHint ? `Preferred stay type hint: ${categoryHint}` : ""}
+${preferenceContext ? `\n${preferenceContext}\nIf the query is ambiguous, prefer stays near their home city and budget preference.` : ""}
+
+Prefer real Google Maps links when possible (maps.google.com or google.com/maps).`;
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
+  const parsed = enrichStaySchema.parse(extractJson(text));
+
+  let city = parsed.city?.trim() || null;
+  let latitude =
+    typeof parsed.latitude === "number" && Number.isFinite(parsed.latitude)
+      ? parsed.latitude
+      : null;
+  let longitude =
+    typeof parsed.longitude === "number" && Number.isFinite(parsed.longitude)
+      ? parsed.longitude
+      : null;
+
+  const geoQuery =
+    [parsed.title, parsed.neighborhood, city].filter(Boolean).join(", ") ||
+    query;
+  if ((!latitude || !longitude) && geoQuery) {
+    const geo = await geocodeCity(geoQuery);
+    if (geo) {
+      latitude = geo.lat;
+      longitude = geo.lng;
+      if (!city && geo.displayName) {
+        city = geo.displayName.split(",").slice(0, 2).join(",").trim();
+      }
+    }
+  }
+
+  return {
+    title: parsed.title.trim(),
+    description: parsed.description.trim(),
+    category: isStayCategory(parsed.category) ? parsed.category : "other",
+    neighborhood: parsed.neighborhood?.trim() || null,
+    city,
+    latitude,
+    longitude,
+    priceBand: parsed.priceBand?.trim() || null,
+    mapsUrl: parsed.mapsUrl,
+    imageUrl: parsed.imageUrl,
+    bookingUrl: parsed.bookingUrl?.trim() || null,
+    notes: parsed.notes,
+  } satisfies EnrichStayResult;
+}
+
 export async function streamChat(
   messages: { role: "user" | "model"; parts: { text: string }[] }[],
   preferenceContext?: string,
@@ -244,10 +351,11 @@ export async function streamChat(
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     systemInstruction: `You are a friendly local outing and bucket-list idea coach for bucketlist.ai.
-Help the user brainstorm places to eat, things to do, kid-friendly activities, parks, entertainment, concerts, community events, festivals, and free public events.
+Help the user brainstorm places to eat, things to do, kid-friendly activities, parks, entertainment, concerts, community events, festivals, free public events, hotels, Airbnbs, and other stays.
 When you suggest a specific place, include the place name clearly (e.g. **Place Name**) so it can be added to a list.
 When you suggest a specific event, say so clearly and bold the event name (e.g. **Event Name**) so it can be saved under Events.
-Keep replies concise and practical. Prefer their home city and preferences when set; only ask clarifying questions when something important is still missing.${prefs}`,
+When you suggest a specific hotel or stay, say so clearly and bold the stay name (e.g. **Stay Name**) so it can be saved under Stays.
+Keep replies concise and practical. Prefer their home city and preferences when set; only ask clarifying questions when something important is still missing. For stays, remind them to check Google Maps or the listing for live prices and availability.${prefs}`,
   });
 
   const chat = model.startChat({

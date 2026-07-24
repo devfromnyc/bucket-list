@@ -5,11 +5,11 @@ Personal bucket-list app for places and things to do. Built with Next.js, Tailwi
 ## Features
 
 - Email/password user accounts (passwords hashed in Neon)
-- Places + **events** (concerts, community, free public, festivals, sports) — scoped per user
-- Categories for places and events; heart favorites; mark done / attended
+- Places + **events** + **stays** (hotels, Airbnb, rentals, hostels) — scoped per user
+- Categories for places, events, and stays; heart favorites; mark done / attended / stayed
 - City filter + mile radius
 - Account settings / preferences (bio, interests, home city, defaults for AI)
-- AI research for places and events → confirm → save card
+- AI research for places, events, and stays → confirm → save card
 - **Plan my day**: mood + criteria → timed itinerary
 - Separate AI ideas chat with “add to list” shortcuts
 
@@ -32,7 +32,7 @@ cp .env.example .env.local
 npm run db:push
 ```
 
-If you already pushed an earlier schema, run `db:push` again so new columns/tables (`events`, `profiles`, geo fields, favorites) are added.
+If you already pushed an earlier schema, run `db:push` again so new columns/tables (`events`, `stays`, `profiles`, geo fields, favorites) are added.
 
 ### 3. Auth + Gemini
 

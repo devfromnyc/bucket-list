@@ -36,6 +36,10 @@ const INTEREST_CHIPS = [
   "Nightlife",
   "Farmers markets",
   "Theater",
+  "Boutique hotels",
+  "Airbnb / rentals",
+  "Pet-friendly stays",
+  "Pool / spa",
 ];
 
 const inputClass =
@@ -197,8 +201,9 @@ export function PreferencesForm() {
             What you’re into
           </h2>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            Used by Ideas chat, Plan my day, and AI research for places and
-            events — so suggestions match you without retyping every time.
+            Used by Ideas chat, Plan my day, and AI research for places,
+            events, and stays — so suggestions match you without retyping every
+            time.
           </p>
         </div>
 
@@ -242,7 +247,7 @@ export function PreferencesForm() {
             Defaults for AI & filters
           </h2>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            Home base and defaults for the board, events, and day planner.
+            Home base and defaults for the board, events, stays, and day planner.
           </p>
         </div>
 

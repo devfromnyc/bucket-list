@@ -3,37 +3,42 @@
 import { useState } from "react";
 import { FavoritesBoard } from "@/components/FavoritesBoard";
 import { EventsBoard } from "@/components/EventsBoard";
+import { StaysBoard } from "@/components/StaysBoard";
 
 export default function FavoritesPage() {
-  const [tab, setTab] = useState<"places" | "events">("places");
+  const [tab, setTab] = useState<"places" | "events" | "stays">("places");
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setTab("places")}
-          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-            tab === "places"
-              ? "bg-[var(--ink)] text-[var(--paper)]"
-              : "bg-[var(--surface)] text-[var(--muted)] ring-1 ring-[var(--border)]"
-          }`}
-        >
-          Places
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("events")}
-          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-            tab === "events"
-              ? "bg-[var(--ink)] text-[var(--paper)]"
-              : "bg-[var(--surface)] text-[var(--muted)] ring-1 ring-[var(--border)]"
-          }`}
-        >
-          Events
-        </button>
+        {(
+          [
+            ["places", "Places"],
+            ["events", "Events"],
+            ["stays", "Stays"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setTab(value)}
+            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+              tab === value
+                ? "bg-[var(--ink)] text-[var(--paper)]"
+                : "bg-[var(--surface)] text-[var(--muted)] ring-1 ring-[var(--border)]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
-      {tab === "places" ? <FavoritesBoard /> : <EventsBoard favoritesOnly />}
+      {tab === "places" ? (
+        <FavoritesBoard />
+      ) : tab === "events" ? (
+        <EventsBoard favoritesOnly />
+      ) : (
+        <StaysBoard favoritesOnly />
+      )}
     </div>
   );
 }

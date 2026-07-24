@@ -29,6 +29,16 @@ export const eventCategories = [
 
 export type EventCategory = (typeof eventCategories)[number];
 
+export const stayCategories = [
+  "hotel",
+  "airbnb",
+  "vacation_rental",
+  "hostel",
+  "other",
+] as const;
+
+export type StayCategory = (typeof stayCategories)[number];
+
 /** User account + bucket-list preferences. */
 export const profiles = pgTable("profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -107,9 +117,38 @@ export const events = pgTable("events", {
     .defaultNow(),
 });
 
+export const stays = pgTable("stays", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description").notNull().default(""),
+  category: text("category").notNull().default("other"),
+  neighborhood: text("neighborhood"),
+  city: text("city"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  priceBand: text("price_band"),
+  imageUrl: text("image_url"),
+  mapsUrl: text("maps_url"),
+  bookingUrl: text("booking_url"),
+  completed: boolean("completed").notNull().default(false),
+  favorited: boolean("favorited").notNull().default(false),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export type Place = typeof places.$inferSelect;
 export type NewPlace = typeof places.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
+export type Stay = typeof stays.$inferSelect;
+export type NewStay = typeof stays.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;

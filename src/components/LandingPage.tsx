@@ -21,6 +21,12 @@ const features = [
     alt: "Warm evening festival lights and a picnic table",
   },
   {
+    title: "Hotels & stays",
+    body: "Save hotels, Airbnbs, and rentals the same way — AI researches like a Maps search; you open the link for live prices.",
+    image: "/images/landing-feature-ai.png",
+    alt: "Planning a place on a phone at a cafe table",
+  },
+  {
     title: "Plan my day",
     body: "Mood, city, and mile radius in — a timed itinerary out. For when you don’t want to decide.",
     image: "/images/landing-feature-day.png",
