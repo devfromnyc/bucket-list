@@ -3,58 +3,40 @@ import Image from "next/image";
 
 const features = [
   {
-    title: "Save places as cards",
-    body: "Photo, title, description, category, and a Maps link — your bucket list at a glance.",
+    title: "Places, events & stays",
+    body: "One account for restaurants and parks, concerts and festivals, hotels and Airbnbs — each saved as a card with photos, details, and a Maps link.",
     image: "/images/landing-feature-map.png",
     alt: "Map and coffee on a sunlit outdoor table",
   },
   {
     title: "AI research on add",
-    body: "Type something like “Concord NC mall.” bucketlist.ai looks it up, you confirm, then it becomes a card.",
+    body: "Type something like “hotels near downtown Charlotte” or “free jazz in the park.” AI looks it up using your preferences; you confirm, then it becomes a card.",
     image: "/images/landing-feature-ai.png",
-    alt: "Planning a place on a phone at a cafe table",
+    alt: "Planning on a phone at a cafe table",
   },
   {
-    title: "Events too",
-    body: "Concerts, community nights, festivals, and free public events — same card flow with dates, venues, and a free badge.",
-    image: "/images/landing-feature-events.png",
-    alt: "Warm evening festival lights and a picnic table",
+    title: "Hotels & Airbnbs",
+    body: "Save lodging the same way as places — researched like a Maps search. Open the listing link when you want live prices and availability.",
+    image: "/images/landing-feature-stays.png",
+    alt: "Cozy boutique hotel room with warm afternoon light",
   },
   {
-    title: "Hotels & stays",
-    body: "Save hotels, Airbnbs, and rentals the same way — AI researches like a Maps search; you open the link for live prices.",
-    image: "/images/landing-feature-ai.png",
-    alt: "Planning a place on a phone at a cafe table",
-  },
-  {
-    title: "Trips",
-    body: "Combine places, events, and stays into a multi-day trip — pick from your lists or let AI draft the days.",
-    image: "/images/landing-feature-day.png",
-    alt: "Sunlit park path inviting a day outdoors",
+    title: "Build a trip",
+    body: "Combine places, events, and stays into a multi-day plan. Pick stops from your lists or let AI draft the days around your destination.",
+    image: "/images/landing-feature-trips.png",
+    alt: "Notebook and coffee for planning a weekend trip",
   },
   {
     title: "Plan my day",
-    body: "Mood, city, and mile radius in — a timed itinerary out. For when you don’t want to decide.",
+    body: "Need something for today? Mood, city, and mile radius in — a timed one-day itinerary out, without building a full trip.",
     image: "/images/landing-feature-day.png",
     alt: "Sunlit park path inviting a day outdoors",
   },
   {
-    title: "Ideas chat",
-    body: "A separate brainstorm space when you want suggestions, not a full day plan.",
+    title: "Ideas chat & preferences",
+    body: "Brainstorm in Ideas chat, heart favorites, and set interests so suggestions match how you actually like to go out.",
     image: "/images/landing-feature-chat.png",
     alt: "Laptop and tea ready for brainstorming ideas",
-  },
-  {
-    title: "City + radius filters",
-    body: "Focus the board on what’s nearby — filter by city and how many miles you’re willing to roam.",
-    image: "/images/landing-feature-radius.png",
-    alt: "Neighborhood rooftops at golden hour",
-  },
-  {
-    title: "Mark it done",
-    body: "Check places off as you go. Your list stays warm, personal, and ready for the next outing.",
-    image: "/images/landing-feature-done.png",
-    alt: "Picnic blanket after a completed day out",
   },
 ];
 
@@ -108,12 +90,12 @@ export function LandingPage() {
               bucketlist.ai
             </p>
             <h1 className="mt-4 max-w-xl text-xl font-medium leading-snug text-white/95 sm:text-2xl">
-              Keep the places you want to go — then let a quiet AI help you
-              actually go.
+              Save places, events, and stays — then turn them into a day or a
+              full trip.
             </h1>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-white/80">
-              A warm personal bucket list for food, parks, kid days, and nights
-              out.
+              A personal bucket list with AI that knows your tastes, from dinner
+              tonight to a weekend away.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -142,11 +124,11 @@ export function LandingPage() {
             What you get
           </p>
           <h2 className="mt-2 font-[family-name:var(--font-display)] text-4xl text-[var(--ink)] sm:text-5xl">
-            Built for deciding less, doing more
+            From a single card to a whole trip
           </h2>
           <p className="mt-4 text-[var(--muted)]">
-            From saving a place to planning the day around it — everything stays
-            in one inviting space.
+            Research with AI, save what you love, filter what’s nearby, then
+            plan today — or stitch everything into a multi-day trip.
           </p>
         </div>
 
@@ -185,18 +167,18 @@ export function LandingPage() {
           {[
             {
               step: "01",
-              title: "Add a place",
-              body: "Name it. AI fills in the details. You approve the card.",
+              title: "Save the mix",
+              body: "Add places, events, and stays. AI fills the card; you approve.",
             },
             {
               step: "02",
               title: "Filter nearby",
-              body: "City and mile radius keep the board useful for today.",
+              body: "City and mile radius keep boards useful for where you are.",
             },
             {
               step: "03",
-              title: "Plan or chat",
-              body: "Build a day itinerary — or brainstorm freely in Ideas chat.",
+              title: "Plan a day or trip",
+              body: "Quick one-day itinerary — or a multi-day trip from your lists.",
             },
           ].map((item) => (
             <div key={item.step} className="animate-[fadeUp_0.45s_ease]">
@@ -228,8 +210,8 @@ export function LandingPage() {
               Ready when the weekend is
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-white/75">
-              Create a free account and open a list that feels like planning a
-              good day — not managing a spreadsheet.
+              Create a free account and keep places, events, stays, and trips in
+              one list that feels like planning — not a spreadsheet.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
@@ -255,7 +237,7 @@ export function LandingPage() {
             bucketlist.ai
           </p>
           <p className="text-sm text-[var(--muted)]">
-            A personal bucket list for places worth going.
+            Places, events, stays, and trips — worth going.
           </p>
         </div>
       </footer>
