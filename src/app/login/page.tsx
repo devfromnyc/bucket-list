@@ -12,6 +12,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const resetSuccess = searchParams.get("reset") === "1";
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -52,6 +53,11 @@ function LoginForm() {
       }
     >
       <form onSubmit={onSubmit} className="space-y-5">
+        {resetSuccess ? (
+          <p className="rounded-xl bg-[var(--accent-soft)] px-4 py-3 text-sm text-[var(--accent)]">
+            Password updated. Log in with your new password.
+          </p>
+        ) : null}
         <div>
           <label
             htmlFor="email"
@@ -70,12 +76,20 @@ function LoginForm() {
           />
         </div>
         <div>
-          <label
-            htmlFor="password"
-            className="mb-2 block text-sm font-medium text-[var(--ink)]"
-          >
-            Password
-          </label>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[var(--ink)]"
+            >
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs font-semibold text-[var(--accent)] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <input
             id="password"
             type="password"

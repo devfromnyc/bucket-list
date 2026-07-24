@@ -64,6 +64,20 @@ export const profiles = pgTable("profiles", {
     .defaultNow(),
 });
 
+/** One-time password reset tokens (store hash only). */
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 export const places = pgTable("places", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -206,3 +220,4 @@ export type TripStop = typeof tripStops.$inferSelect;
 export type NewTripStop = typeof tripStops.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type NewProfile = typeof profiles.$inferInsert;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;

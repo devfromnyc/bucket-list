@@ -1,8 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { AUTH_COOKIE, verifySessionToken } from "@/lib/auth";
 
-const publicExact = new Set(["/", "/login", "/signup"]);
-const publicPrefixes = ["/api/auth/login", "/api/auth/signup", "/api/auth/logout"];
+const publicExact = new Set([
+  "/",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+]);
+const publicPrefixes = [
+  "/api/auth/login",
+  "/api/auth/signup",
+  "/api/auth/logout",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,7 +34,12 @@ export async function middleware(request: NextRequest) {
     publicExact.has(pathname) ||
     publicPrefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
-  if (pathname === "/login" || pathname === "/signup") {
+  if (
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password"
+  ) {
     if (ok) {
       const board = request.nextUrl.clone();
       board.pathname = "/board";
